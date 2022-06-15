@@ -1,0 +1,7 @@
+{
+    "sourcepawn.optionalIncludeDirsPaths": [
+        "path to includes here"
+    ],
+    "sourcepawn.MainPath": "main path here (optional)",
+    "sourcepawn.outputDirectoryPath": "output path here"
+}
