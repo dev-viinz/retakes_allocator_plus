@@ -12,6 +12,6 @@ I won't make a guide for this, if you know how to contribute, feel free to PR th
 
 ## Roadmap
 - ~~Make AWP chance based (20%)~~
-- Add possibility to choose pistols
+- ~~Add possibility to choose pistols~~
 - Add pistol rounds (chance based % not decided)
 - *Maybe* add more options to rifles
