@@ -10,11 +10,38 @@
 #define MENU_TIME_LENGTH 15
 
 char g_CTRifleChoice[MAXPLAYERS+1][WEAPON_STRING_LENGTH];
+char g_CTPistolChoice[MAXPLAYERS+1][WEAPON_STRING_LENGTH];
 char g_TRifleChoice[MAXPLAYERS+1][WEAPON_STRING_LENGTH];
+char g_TPistolChoice[MAXPLAYERS+1][WEAPON_STRING_LENGTH];
 bool g_AwpChoice[MAXPLAYERS+1];
 Handle g_hCTRifleChoiceCookie;
+Handle g_hCTPistolChoiceCookie;
 Handle g_hTRifleChoiceCookie;
+Handle g_hTPistolChoiceCookie;
 Handle g_hAwpChoiceCookie;
+
+char g_TPistolChoices[][][] = {
+    // Default pistols:
+    { "weapon_glock", "Glock" },
+    // Upgraded pistols:
+    { "weapon_p250", "P250" },
+    { "weapon_tec9", "Tec-9" },
+    { "weapon_deagle", "Deagle" },
+    // Random pistol, must be last entry in the array, might implement it at some point
+    // { "", "Random" },
+};
+
+char g_CTPistolChoices[][][] = {
+    // Default pistols:
+    { "weapon_usp_silencer", "USP" },
+    { "weapon_hkp2000", "P2000" },
+    // Upgraded pistols:
+    { "weapon_p250", "P250" },
+    { "weapon_fiveseven", "Five-Seven" },
+    { "weapon_deagle", "Deagle" },
+    // Random pistol, must be last entry in the array, might implement it at some point
+    // { "", "Random" },
+};
 
 public Plugin myinfo = {
 	name = "CS:GO Retakes: weapon allocator plus",
@@ -26,13 +53,17 @@ public Plugin myinfo = {
 
 public void OnPluginStart() {
 	g_hCTRifleChoiceCookie = RegClientCookie("retakes_ctriflechoice", "", CookieAccess_Private);
+	g_hCTPistolChoiceCookie = RegClientCookie("retakes_ctpistolchoice", "", CookieAccess_Private);
 	g_hTRifleChoiceCookie = RegClientCookie("retakes_triflechoice", "", CookieAccess_Private);
+	g_hTPistolChoiceCookie = RegClientCookie("retakes_tpistolchoice", "", CookieAccess_Private);
 	g_hAwpChoiceCookie = RegClientCookie("retakes_awpchoice", "", CookieAccess_Private);
 }
 
 public void OnClientConnected(int client) {
 	g_CTRifleChoice[client] = "m4a1";
+	g_CTPistolChoice[client] = "weapon_usp_silencer";
 	g_TRifleChoice[client] = "ak47";
+	g_TPistolChoice[client] = "weapon_glock";
 	g_AwpChoice[client] = false;
 }
 
@@ -51,11 +82,17 @@ public void OnClientCookiesCached(int client) {
 	if (IsFakeClient(client))
 		return;
 	char ctrifle[WEAPON_STRING_LENGTH];
+	char ctpistol[WEAPON_STRING_LENGTH];
 	char trifle[WEAPON_STRING_LENGTH];
+	char tpistol[WEAPON_STRING_LENGTH];
 	GetClientCookie(client, g_hCTRifleChoiceCookie, ctrifle, sizeof(ctrifle));
+	GetClientCookie(client, g_hCTPistolChoiceCookie, ctpistol, sizeof(ctpistol));
 	GetClientCookie(client, g_hTRifleChoiceCookie, trifle, sizeof(trifle));
+	GetClientCookie(client, g_hTPistolChoiceCookie, tpistol, sizeof(tpistol));
 	g_CTRifleChoice[client] = ctrifle;
+	g_CTPistolChoice[client] = ctpistol;
 	g_TRifleChoice[client] = trifle;
+	g_TPistolChoice[client] = tpistol;
 	g_AwpChoice[client] = GetCookieBool(client, g_hAwpChoiceCookie);
 }
 
@@ -104,7 +141,7 @@ public void WeaponAllocator(ArrayList tPlayers, ArrayList ctPlayers, Bombsite bo
 			primary = "weapon_ak47";
 		}
 
-		secondary = "weapon_glock";
+		secondary = g_TPistolChoice[client];
 		health = 100;
 		kevlar = 100;
 		helmet = true;
@@ -128,7 +165,7 @@ public void WeaponAllocator(ArrayList tPlayers, ArrayList ctPlayers, Bombsite bo
 			primary = "weapon_aug";
 		}
 
-		secondary = "weapon_hkp2000";
+		secondary = g_CTPistolChoice[client];
 		kit = true;
 		health = 100;
 		kevlar = 100;
@@ -155,6 +192,28 @@ public int MenuHandler_CTRifle(Menu menu, MenuAction action, int param1, int par
 		menu.GetItem(param2, choice, sizeof(choice));
 		g_CTRifleChoice[client] = choice;
 		SetClientCookie(client, g_hCTRifleChoiceCookie, choice);
+		CTPistolMenu(client);
+	} else if (action == MenuAction_End) {
+		delete menu;
+	}
+}
+
+public void CTPistolMenu(int client) {
+	Menu menu = new Menu(MenuHandler_CTPistol);
+	menu.SetTitle("Select a CT pistol:");
+	for (int i = 0; i < sizeof(g_CTPistolChoices); i++) {
+        menu.AddItem(g_CTPistolChoices[i][0], g_CTPistolChoices[i][1]);
+    }
+	menu.Display(client, MENU_TIME_LENGTH);
+}
+
+public int MenuHandler_CTPistol(Menu menu, MenuAction action, int param1, int param2) {
+	if (action == MenuAction_Select) {
+		int client = param1;
+		char choice[WEAPON_STRING_LENGTH];
+		menu.GetItem(param2, choice, sizeof(choice));
+		g_CTPistolChoice[client] = choice;
+		SetClientCookie(client, g_hCTPistolChoiceCookie, choice);
 		TRifleMenu(client);
 	} else if (action == MenuAction_End) {
 		delete menu;
@@ -176,6 +235,28 @@ public int MenuHandler_TRifle(Menu menu, MenuAction action, int param1, int para
 		menu.GetItem(param2, choice, sizeof(choice));
 		g_TRifleChoice[client] = choice;
 		SetClientCookie(client, g_hTRifleChoiceCookie, choice);
+		TPistolMenu(client);
+	} else if (action == MenuAction_End) {
+		delete menu;
+	}
+}
+
+public void TPistolMenu(int client) {
+	Menu menu = new Menu(MenuHandler_TPistol);
+	menu.SetTitle("Select a T pistol:");
+	for (int i = 0; i < sizeof(g_TPistolChoices); i++) {
+        menu.AddItem(g_TPistolChoices[i][0], g_TPistolChoices[i][1]);
+    }
+	menu.Display(client, MENU_TIME_LENGTH);
+}
+
+public int MenuHandler_TPistol(Menu menu, MenuAction action, int param1, int param2) {
+	if (action == MenuAction_Select) {
+		int client = param1;
+		char choice[WEAPON_STRING_LENGTH];
+		menu.GetItem(param2, choice, sizeof(choice));
+		g_TPistolChoice[client] = choice;
+		SetClientCookie(client, g_hTPistolChoiceCookie, choice);
 		GiveAwpMenu(client);
 	} else if (action == MenuAction_End) {
 		delete menu;
