@@ -21,26 +21,26 @@ Handle g_hTPistolChoiceCookie;
 Handle g_hAwpChoiceCookie;
 
 char g_TPistolChoices[][][] = {
-    // Default pistols:
-    { "weapon_glock", "Glock" },
-    // Upgraded pistols:
-    { "weapon_p250", "P250" },
-    { "weapon_tec9", "Tec-9" },
-    { "weapon_deagle", "Deagle" },
-    // Random pistol, must be last entry in the array, might implement it at some point
-    // { "", "Random" },
+	// Default pistols:
+	{ "weapon_glock", "Glock" },
+	// Upgraded pistols:
+	{ "weapon_p250", "P250" },
+	{ "weapon_tec9", "Tec-9" },
+	{ "weapon_deagle", "Deagle" },
+	// Random pistol, must be last entry in the array, might implement it at some point
+	// { "", "Random" },
 };
 
 char g_CTPistolChoices[][][] = {
-    // Default pistols:
-    { "weapon_usp_silencer", "USP" },
-    { "weapon_hkp2000", "P2000" },
-    // Upgraded pistols:
-    { "weapon_p250", "P250" },
-    { "weapon_fiveseven", "Five-Seven" },
-    { "weapon_deagle", "Deagle" },
-    // Random pistol, must be last entry in the array, might implement it at some point
-    // { "", "Random" },
+	// Default pistols:
+	{ "weapon_usp_silencer", "USP" },
+	{ "weapon_hkp2000", "P2000" },
+	// Upgraded pistols:
+	{ "weapon_p250", "P250" },
+	{ "weapon_fiveseven", "Five-Seven" },
+	{ "weapon_deagle", "Deagle" },
+	// Random pistol, must be last entry in the array, might implement it at some point
+	// { "", "Random" },
 };
 
 public Plugin myinfo = {
@@ -114,6 +114,16 @@ static bool TryForAwp() {
 	return false;
 }
 
+static bool IsPistolRound() {
+	int ctscore = GetTeamScore(3);
+	int tscore = GetTeamScore(2);
+	int score = ctscore + tscore;
+	if ((score % 5) == 0) {
+		return true;
+	}
+	return false;
+}
+
 public void WeaponAllocator(ArrayList tPlayers, ArrayList ctPlayers, Bombsite bombsite) {
 	int tCount = tPlayers.Length;
 	int ctCount = ctPlayers.Length;
@@ -129,22 +139,33 @@ public void WeaponAllocator(ArrayList tPlayers, ArrayList ctPlayers, Bombsite bo
 	bool giveTAwp = true;
 	bool giveCTAwp = true;
 
+	bool pistolRound = false;
+	if (IsPistolRound()) {
+		pistolRound = true;
+	}
+
 	for (int i = 0; i < tCount; i++) {
 		int client = tPlayers.Get(i);
 
-		if (giveTAwp && g_AwpChoice[client] && TryForAwp()) {
-			primary = "weapon_awp";
-			giveTAwp = false;
-		} else if(StrEqual(g_TRifleChoice[client], "sg556", true)) {
-			primary = "weapon_sg556";
+		if (pistolRound) {
+			Retakes_MessageToAll("%s", "Pistol round!");
+			helmet = false;
 		} else {
-			primary = "weapon_ak47";
+			if (giveTAwp && g_AwpChoice[client] && TryForAwp()) {
+				primary = "weapon_awp";
+				giveTAwp = false;
+			} else if(StrEqual(g_TRifleChoice[client], "sg556", true)) {
+				primary = "weapon_sg556";
+			} else {
+				primary = "weapon_ak47";
+			}
+			helmet = true;
 		}
+
 
 		secondary = g_TPistolChoice[client];
 		health = 100;
 		kevlar = 100;
-		helmet = true;
 		kit = false;
 		SetNades(nades);
 
@@ -154,22 +175,27 @@ public void WeaponAllocator(ArrayList tPlayers, ArrayList ctPlayers, Bombsite bo
 	for (int i = 0; i < ctCount; i++) {
 		int client = ctPlayers.Get(i);
 
-		if (giveCTAwp && g_AwpChoice[client] && TryForAwp()) {
-			primary = "weapon_awp";
-			giveCTAwp = false;
-		} else if (StrEqual(g_CTRifleChoice[client], "m4a1_silencer", true)) {
-			primary = "weapon_m4a1_silencer";
-		} else if (StrEqual(g_CTRifleChoice[client], "m4a1", true)) {
-			primary = "weapon_m4a1";
+		if (pistolRound) {
+			Retakes_MessageToAll("%s", "Pistol round!");
+			helmet = false;
 		} else {
-			primary = "weapon_aug";
+			if (giveCTAwp && g_AwpChoice[client] && TryForAwp()) {
+				primary = "weapon_awp";
+				giveCTAwp = false;
+			} else if (StrEqual(g_CTRifleChoice[client], "m4a1_silencer", true)) {
+				primary = "weapon_m4a1_silencer";
+			} else if (StrEqual(g_CTRifleChoice[client], "m4a1", true)) {
+				primary = "weapon_m4a1";
+			} else {
+				primary = "weapon_aug";
+			}
+			helmet = true;
 		}
 
 		secondary = g_CTPistolChoice[client];
 		kit = true;
 		health = 100;
 		kevlar = 100;
-		helmet = true;
 		SetNades(nades);
 
 		Retakes_SetPlayerInfo(client, primary, secondary, nades, health, kevlar, helmet, kit);
@@ -202,8 +228,8 @@ public void CTPistolMenu(int client) {
 	Menu menu = new Menu(MenuHandler_CTPistol);
 	menu.SetTitle("Select a CT pistol:");
 	for (int i = 0; i < sizeof(g_CTPistolChoices); i++) {
-        menu.AddItem(g_CTPistolChoices[i][0], g_CTPistolChoices[i][1]);
-    }
+		menu.AddItem(g_CTPistolChoices[i][0], g_CTPistolChoices[i][1]);
+	}
 	menu.Display(client, MENU_TIME_LENGTH);
 }
 
@@ -245,8 +271,8 @@ public void TPistolMenu(int client) {
 	Menu menu = new Menu(MenuHandler_TPistol);
 	menu.SetTitle("Select a T pistol:");
 	for (int i = 0; i < sizeof(g_TPistolChoices); i++) {
-        menu.AddItem(g_TPistolChoices[i][0], g_TPistolChoices[i][1]);
-    }
+		menu.AddItem(g_TPistolChoices[i][0], g_TPistolChoices[i][1]);
+	}
 	menu.Display(client, MENU_TIME_LENGTH);
 }
 
