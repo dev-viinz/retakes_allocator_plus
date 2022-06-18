@@ -148,7 +148,6 @@ public void WeaponAllocator(ArrayList tPlayers, ArrayList ctPlayers, Bombsite bo
 		int client = tPlayers.Get(i);
 
 		if (pistolRound) {
-			Retakes_MessageToAll("%s", "Pistol round!");
 			helmet = false;
 		} else {
 			if (giveTAwp && g_AwpChoice[client] && TryForAwp()) {
@@ -176,7 +175,6 @@ public void WeaponAllocator(ArrayList tPlayers, ArrayList ctPlayers, Bombsite bo
 		int client = ctPlayers.Get(i);
 
 		if (pistolRound) {
-			Retakes_MessageToAll("%s", "Pistol round!");
 			helmet = false;
 		} else {
 			if (giveCTAwp && g_AwpChoice[client] && TryForAwp()) {
@@ -199,6 +197,10 @@ public void WeaponAllocator(ArrayList tPlayers, ArrayList ctPlayers, Bombsite bo
 		SetNades(nades);
 
 		Retakes_SetPlayerInfo(client, primary, secondary, nades, health, kevlar, helmet, kit);
+	}
+	
+	if (IsPistolRound()) {
+		Retakes_MessageToAll("%s", "Pistol round!");
 	}
 }
 
