@@ -14,4 +14,5 @@ I won't make a guide for this, if you know how to contribute, feel free to PR th
 - ~~Make AWP chance based (20%)~~
 - ~~Add possibility to choose pistols~~
 - ~~Add pistol rounds (every 5 rounds)~~
+- Random pistol choice
 - *Maybe* add more options to rifles
